@@ -8,9 +8,9 @@
  */
 
 // ----------------------------------------------------------------------------
-// 1. BASE DE DONNÉES PRODUITS (Catalogue en mémoire)
+// 1. BASE DE DONNÉES PRODUITS (Catalogue d'initialisation)
 // ----------------------------------------------------------------------------
-const PRODUCTS_DATA = [
+const INITIAL_CATALOG = [
   {
     id: 1,
     name: "HP EliteBook 840 G10",
@@ -489,6 +489,22 @@ const PRODUCTS_DATA = [
   }
 ];
 
+// Synchronisation automatique avec le LocalStorage (Partagé avec le Dashboard Admin)
+let storedCatalog = null;
+try {
+  storedCatalog = JSON.parse(localStorage.getItem('fktech_products'));
+} catch (e) {
+  storedCatalog = null;
+}
+
+const PRODUCTS_DATA = (storedCatalog && Array.isArray(storedCatalog) && storedCatalog.length > 0)
+  ? storedCatalog
+  : INITIAL_CATALOG;
+
+if (!localStorage.getItem('fktech_products')) {
+  localStorage.setItem('fktech_products', JSON.stringify(INITIAL_CATALOG));
+}
+
 // ----------------------------------------------------------------------------
 // 2. CONFIGURATION DES CATÉGORIES
 // ----------------------------------------------------------------------------
@@ -839,6 +855,31 @@ function checkoutWhatsApp() {
   message += `\n*Total de la commande :* ${formatFCFA(totals.total)}\n`;
   message += "\nMerci de me confirmer la disponibilité et les modalités de livraison.";
 
+  // Enregistrement automatique de la commande dans LocalStorage pour le Dashboard Admin
+  try {
+    const existingOrders = JSON.parse(localStorage.getItem('fktech_orders')) || [];
+    const newOrder = {
+      id: "CMD-" + Math.floor(1000 + Math.random() * 9000),
+      clientName: "Client Web (WhatsApp)",
+      phone: "22379792629",
+      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      items: state.cart.map(item => {
+        const product = PRODUCTS_DATA.find(p => p.id === item.productId);
+        return {
+          name: product ? product.name : `Produit #${item.productId}`,
+          quantity: item.quantity,
+          price: product ? product.price : 0
+        };
+      }),
+      total: totals.total,
+      status: "pending"
+    };
+    existingOrders.unshift(newOrder);
+    localStorage.setItem('fktech_orders', JSON.stringify(existingOrders));
+  } catch (err) {
+    console.warn("Erreur sauvegarde commande admin:", err);
+  }
+
   const encoded = encodeURIComponent(message);
   window.open(`https://wa.me/22379792629?text=${encoded}`, '_blank');
 }
@@ -1077,11 +1118,11 @@ function renderPromoSection() {
 
     html += `
       <div class="product-card">
-        <div class="product-image-box">
+        <div class="product-image-box" onclick="openProductModal(${product.id})" role="button" tabindex="0" title="Cliquer pour afficher les détails du produit">
           <div class="product-badges">
             <span class="badge badge-promo">-${discountPercent}% PROMO</span>
           </div>
-          <button class="btn-wishlist ${isFav ? 'active' : ''}" onclick="toggleWishlist(${product.id})" title="Ajouter aux favoris">
+          <button class="btn-wishlist ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist(${product.id});" title="Ajouter aux favoris">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
@@ -1093,7 +1134,7 @@ function renderPromoSection() {
             <span class="product-brand">${product.brand}</span>
             <span class="product-category-tag">${product.category}</span>
           </div>
-          <h3 class="product-title" title="${product.name}">${product.name}</h3>
+          <h3 class="product-title" onclick="openProductModal(${product.id})" title="${product.name}">${product.name}</h3>
           <div class="product-rating">
             ${renderStars(product.rating)}
             <span style="color:#fff; font-weight:700;">${product.rating}</span>
@@ -1426,12 +1467,12 @@ function renderProducts() {
 
     html += `
       <div class="product-card">
-        <div class="product-image-box">
+        <div class="product-image-box" onclick="openProductModal(${product.id})" role="button" tabindex="0" title="Cliquer pour afficher les détails du produit">
           <div class="product-badges">
             ${product.isPromo ? `<span class="badge badge-promo">-${discountPercent}% PROMO</span>` : ''}
             ${product.isNew ? `<span class="badge badge-new">NOUVEAU</span>` : ''}
           </div>
-          <button class="btn-wishlist ${isFav ? 'active' : ''}" onclick="toggleWishlist(${product.id})" title="Ajouter aux favoris">
+          <button class="btn-wishlist ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist(${product.id});" title="Ajouter aux favoris">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
@@ -1445,7 +1486,7 @@ function renderProducts() {
             <span class="product-category-tag">${product.category}</span>
           </div>
 
-          <h3 class="product-title" title="${product.name}">${product.name}</h3>
+          <h3 class="product-title" onclick="openProductModal(${product.id})" title="${product.name}">${product.name}</h3>
 
           <div class="product-rating">
             ${renderStars(product.rating)}
@@ -1495,7 +1536,30 @@ function handleContactSubmit(event) {
     return;
   }
 
-  // Simulation d'envoi réussi
+  // Enregistrement du message dans le LocalStorage pour le Dashboard Admin
+  try {
+    const emailInput = document.getElementById('contact-email');
+    const subjectInput = document.getElementById('contact-subject');
+    const existingMessages = JSON.parse(localStorage.getItem('fktech_messages')) || [];
+
+    const newMsg = {
+      id: Date.now(),
+      name: name,
+      email: emailInput && emailInput.value ? emailInput.value.trim() : 'Non précisé',
+      phone: phone,
+      subject: subjectInput && subjectInput.options[subjectInput.selectedIndex] ? subjectInput.options[subjectInput.selectedIndex].text : 'Demande générale',
+      message: message,
+      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      unread: true
+    };
+
+    existingMessages.unshift(newMsg);
+    localStorage.setItem('fktech_messages', JSON.stringify(existingMessages));
+  } catch (err) {
+    console.warn("Erreur sauvegarde message admin:", err);
+  }
+
+  // Confirmation utilisateur
   showToast(`Merci ${name} ! Votre message a été transmis à l'équipe FKTECH.`, 'success');
   event.target.reset();
 }
@@ -1515,7 +1579,28 @@ function scrollToSection(sectionId) {
 // ----------------------------------------------------------------------------
 // 12. INITIALISATION GÉNÉRALE AU CHARGEMENT DE LA PAGE
 // ----------------------------------------------------------------------------
+function applyTheme(isLight) {
+  document.body.classList.toggle('light-mode', isLight);
+  const themeIcon = document.querySelector('.theme-toggle-icon');
+  if (themeIcon) {
+    themeIcon.textContent = isLight ? '🌙' : '☀️';
+  }
+  localStorage.setItem('fktech-theme', isLight ? 'light' : 'dark');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('fktech-theme');
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(savedTheme ? savedTheme === 'light' : prefersLight);
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isLight = !document.body.classList.contains('light-mode');
+      applyTheme(isLight);
+    });
+  }
+
   // 1. Initialiser les compteurs de badges
   updateCartBadge();
   updateWishlistBadge();

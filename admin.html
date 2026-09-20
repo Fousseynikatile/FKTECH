@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FKTECH — Tableau de Bord Administrateur</title>
+  <meta name="description" content="Panneau d'administration FKTECH : Gestion du catalogue produits, suivi des commandes, boîte de réception et indicateurs de performance.">
+  
+  <!-- Polices Google Fonts Modernes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Feuille de style du Dashboard -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. BARRE LATÉRALE DE NAVIGATION (SIDEBAR)
+       ======================================================================== -->
+  <aside class="admin-sidebar" id="admin-sidebar">
+    <!-- En-tête Sidebar avec Logo -->
+    <div class="sidebar-header">
+      <div class="admin-logo">
+        <div class="admin-logo-badge">FK</div>
+        <div class="admin-logo-text">FK<span>TECH</span></div>
+        <span class="admin-tag">ADMIN</span>
+      </div>
+    </div>
+
+    <!-- Navigation Principale -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Gestion Principale</div>
+      
+      <button class="nav-tab-btn active" data-tab="dashboard">
+        <span class="tab-icon">📊</span>
+        <span>Vue d'ensemble</span>
+      </button>
+
+      <button class="nav-tab-btn" data-tab="products">
+        <span class="tab-icon">💻</span>
+        <span>Produits & Catalogue</span>
+      </button>
+
+      <button class="nav-tab-btn" data-tab="orders">
+        <span class="tab-icon">🛒</span>
+        <span>Commandes</span>
+        <span class="nav-badge danger" id="sidebar-order-badge" style="display: none;">0</span>
+      </button>
+
+      <button class="nav-tab-btn" data-tab="messages">
+        <span class="tab-icon">📬</span>
+        <span>Messages Clients</span>
+        <span class="nav-badge" id="sidebar-msg-badge" style="display: none;">0</span>
+      </button>
+
+      <div class="nav-section-title">Configuration</div>
+
+      <button class="nav-tab-btn" data-tab="settings">
+        <span class="tab-icon">⚙️</span>
+        <span>Paramètres Boutique</span>
+      </button>
+    </nav>
+
+    <!-- Pied de Sidebar avec Lien vers la Boutique -->
+    <div class="sidebar-footer">
+      <a href="index.html" class="btn-shop-link" target="_blank">
+        <span>🌐</span>
+        <span>Voir la Boutique FKTECH</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       2. CONTENU PRINCIPAL & EN-TÊTE SUPÉRIEUR
+       ======================================================================== -->
+  <main class="admin-main">
+    
+    <!-- Barre supérieure (Topbar) -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="mobile-toggle-btn" aria-label="Menu Mobile">☰</button>
+        <div class="page-breadcrumb">
+          FKTECH Administration / <span id="current-page-breadcrumb">Vue d’ensemble</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="system-status-indicator">
+          <span class="status-dot"></span>
+          <span>Système Connecté (LocalStorage)</span>
+        </div>
+
+        <div class="admin-profile">
+          <div class="admin-avatar">FK</div>
+          <div class="admin-profile-info">
+            <span class="admin-name">Fousseyni K.</span>
+            <span class="admin-role">Directeur Général</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Zone de Contenu Dynamique des Onglets -->
+    <div class="admin-content">
+
+      <!-- --------------------------------------------------------------------
+           ONGLET 1 : VUE D'ENSEMBLE (DASHBOARD)
+           -------------------------------------------------------------------- -->
+      <section class="tab-pane active" id="tab-dashboard">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Tableau de Bord Exécutif</h1>
+            <p class="section-subtitle">Performances commerciales et état des stocks en temps réel</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddProductModal()">
+            <span>+</span>
+            <span>Nouveau Produit</span>
+          </button>
+        </div>
+
+        <!-- 4 Cartes d'Indicateurs Clés (KPIs) -->
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-red">
+            <div class="kpi-header">
+              <span class="kpi-title">Chiffre d'Affaires</span>
+              <div class="kpi-icon">💰</div>
+            </div>
+            <div class="kpi-value" id="kpi-total-revenue">0 FCFA</div>
+            <div class="kpi-subtext">
+              <span class="kpi-trend positive">↑ +18.4%</span> vs mois précédent
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-green">
+            <div class="kpi-header">
+              <span class="kpi-title">Total Commandes</span>
+              <div class="kpi-icon">📦</div>
+            </div>
+            <div class="kpi-value" id="kpi-total-orders">0</div>
+            <div class="kpi-subtext">
+              <span class="kpi-trend positive">↑ +12%</span> commandes passées
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-header">
+              <span class="kpi-title">Catalogue Actif</span>
+              <div class="kpi-icon">💻</div>
+            </div>
+            <div class="kpi-value" id="kpi-total-products">0</div>
+            <div class="kpi-subtext">Articles référencés en boutique</div>
+          </div>
+
+          <div class="kpi-card kpi-orange">
+            <div class="kpi-header">
+              <span class="kpi-title">Alertes Stock Faible</span>
+              <div class="kpi-icon">⚠️</div>
+            </div>
+            <div class="kpi-value" id="kpi-low-stock">0</div>
+            <div class="kpi-subtext">Produits à réapprovisionner</div>
+          </div>
+        </div>
+
+        <!-- Graphiques et Répartition -->
+        <div class="dashboard-grid-two">
+          <div class="chart-card">
+            <div class="card-title-box">
+              <h3>Évolution des Ventes Mensuelles (en Millions FCFA)</h3>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Mise à jour automatique</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="sales-chart-canvas"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="card-title-box">
+              <h3>Répartition par Catégorie</h3>
+            </div>
+            <div class="category-bars-list" id="category-bars-container">
+              <!-- Rempli dynamiquement -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau des Commandes Récentes -->
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3 style="font-size:1.1rem; font-weight:700;">Commandes Récentes</h3>
+            <button class="btn btn-secondary" onclick="switchAdminTab('orders')" style="font-size:0.8rem; padding:6px 14px;">
+              Voir toutes les commandes →
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>N° Commande</th>
+                  <th>Client</th>
+                  <th>Articles</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-tbody">
+                <!-- Rempli par admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------------------------
+           ONGLET 2 : GESTION DES PRODUITS & CATALOGUE (CRUD)
+           -------------------------------------------------------------------- -->
+      <section class="tab-pane" id="tab-products">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Catalogue des Produits</h1>
+            <p class="section-subtitle">Gérez vos articles, ajustez les prix en FCFA et contrôlez les stocks</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddProductModal()">
+            <span>+</span>
+            <span>Ajouter un Produit</span>
+          </button>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="table-search-box">
+              <span>🔍</span>
+              <input type="text" id="admin-product-search" placeholder="Rechercher par nom ou marque...">
+            </div>
+
+            <div class="filter-group">
+              <select class="custom-select" id="admin-product-category">
+                <option value="all">Toutes les catégories</option>
+                <option value="Ordinateurs portables">Ordinateurs portables</option>
+                <option value="Ordinateurs de bureau">Ordinateurs de bureau</option>
+                <option value="PC Gamer">PC Gamer</option>
+                <option value="Écrans">Écrans</option>
+                <option value="Claviers">Claviers</option>
+                <option value="Souris">Souris</option>
+                <option value="Imprimantes">Imprimantes</option>
+                <option value="Stockage">Stockage</option>
+                <option value="Accessoires">Accessoires</option>
+                <option value="Réseaux">Réseaux</option>
+              </select>
+
+              <select class="custom-select" id="admin-product-stock">
+                <option value="all">Tous les états de stock</option>
+                <option value="in">En stock normal</option>
+                <option value="low">Stock faible (≤ 5)</option>
+                <option value="out">Rupture de stock (0)</option>
+              </select>
+
+              <span class="nav-badge" id="products-count-badge">0 produit(s)</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">ID</th>
+                  <th>Produit</th>
+                  <th>Catégorie</th>
+                  <th>Prix Unitaire</th>
+                  <th>Disponibilité</th>
+                  <th style="width: 160px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody">
+                <!-- Rempli dynamiquement -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------------------------
+           ONGLET 3 : SUIVI DES COMMANDES
+           -------------------------------------------------------------------- -->
+      <section class="tab-pane" id="tab-orders">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Gestion des Commandes</h1>
+            <p class="section-subtitle">Suivi du statut de préparation, expédition et confirmation WhatsApp</p>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="table-search-box">
+              <span>🔍</span>
+              <input type="text" id="admin-order-search" placeholder="Rechercher par N° commande, client, tél...">
+            </div>
+
+            <div class="filter-group">
+              <select class="custom-select" id="admin-order-status">
+                <option value="all">Tous les statuts</option>
+                <option value="pending">⏳ En attente</option>
+                <option value="confirmed">✓ Confirmée</option>
+                <option value="shipped">🚚 Expédiée</option>
+                <option value="delivered">★ Livrée</option>
+                <option value="cancelled">✕ Annulée</option>
+              </select>
+              <span class="nav-badge" id="orders-count-badge">0 commande(s)</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Réf</th>
+                  <th>Date</th>
+                  <th>Client</th>
+                  <th>Contenu</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody">
+                <!-- Rempli dynamiquement -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------------------------
+           ONGLET 4 : MESSAGES & FORMULAIRE DE CONTACT
+           -------------------------------------------------------------------- -->
+      <section class="tab-pane" id="tab-messages">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Boîte de Réception Clients</h1>
+            <p class="section-subtitle">Demandes de renseignements et devis envoyés depuis la boutique</p>
+          </div>
+          <span class="nav-badge" id="messages-count-badge">0 message(s)</span>
+        </div>
+
+        <div class="messages-list" id="messages-container">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------------------------
+           ONGLET 5 : PARAMÈTRES BOUTIQUE & MAINTENANCE
+           -------------------------------------------------------------------- -->
+      <section class="tab-pane" id="tab-settings">
+        <div class="section-header">
+          <div>
+            <h1 class="section-title">Paramètres de la Boutique FKTECH</h1>
+            <p class="section-subtitle">Coordonnées commerciales, code promotionnel et réinitialisation</p>
+          </div>
+        </div>
+
+        <div class="dashboard-grid-two">
+          <div class="data-card" style="padding: 24px;">
+            <h3 style="margin-bottom: 20px; font-size:1.15rem;">Configuration Commerciale</h3>
+            
+            <form id="settings-form" class="form-grid">
+              <div class="form-group-full">
+                <label class="form-label" for="settings-store-name">Nom de l'Enseigne</label>
+                <input type="text" id="settings-store-name" class="form-control" required>
+              </div>
+
+              <div>
+                <label class="form-label" for="settings-whatsapp">Numéro WhatsApp Commercial (Mali)</label>
+                <input type="text" id="settings-whatsapp" class="form-control" placeholder="22379792629" required>
+                <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px; display:block;">
+                  Format international sans le + (ex: 22379792629)
+                </small>
+              </div>
+
+              <div>
+                <label class="form-label" for="settings-promo">Code Promo Actif Panier</label>
+                <input type="text" id="settings-promo" class="form-control" placeholder="FKTECH10" required>
+              </div>
+
+              <div>
+                <label class="form-label" for="settings-threshold">Seuil d'Alerte Stock Faible</label>
+                <input type="number" id="settings-threshold" class="form-control" min="1" max="50" required>
+              </div>
+
+              <div class="form-group-full" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-primary">
+                  <span>💾</span>
+                  <span>Enregistrer les modifications</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="data-card" style="padding: 24px;">
+            <h3 style="margin-bottom: 16px; font-size:1.15rem; color:var(--red-primary);">Zone de Maintenance</h3>
+            <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom: 20px; line-height:1.6;">
+              Si vous avez modifié des données et souhaitez revenir au catalogue officiel complet de démarrage (produits, commandes et messages d'exemples).
+            </p>
+
+            <button class="btn btn-danger" onclick="resetDemoData()" style="width: 100%; justify-content: center;">
+              <span>🔄</span>
+              <span>Réinitialiser les données de démonstration</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================================================
+       3. MODALE D'AJOUT / MODIFICATION DE PRODUIT
+       ======================================================================== -->
+  <div class="admin-modal-backdrop" id="admin-product-modal">
+    <div class="admin-modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="product-modal-title">Ajouter un Nouveau Produit</h2>
+        <button class="modal-close-btn" onclick="closeAdminProductModal()">✕</button>
+      </div>
+
+      <form id="product-form">
+        <div class="modal-body">
+          <div class="form-grid">
+            
+            <div class="form-group-full">
+              <label class="form-label" for="form-prod-name">Nom complet du produit *</label>
+              <input type="text" id="form-prod-name" class="form-control" placeholder="Ex: HP EliteBook 840 G10" required>
+            </div>
+
+            <div>
+              <label class="form-label" for="form-prod-brand">Marque constructeur *</label>
+              <input type="text" id="form-prod-brand" class="form-control" placeholder="HP, Dell, Asus, Lenovo..." required>
+            </div>
+
+            <div>
+              <label class="form-label" for="form-prod-category">Catégorie *</label>
+              <select id="form-prod-category" class="form-control" required>
+                <option value="Ordinateurs portables">Ordinateurs portables</option>
+                <option value="Ordinateurs de bureau">Ordinateurs de bureau</option>
+                <option value="PC Gamer">PC Gamer</option>
+                <option value="Écrans">Écrans</option>
+                <option value="Claviers">Claviers</option>
+                <option value="Souris">Souris</option>
+                <option value="Imprimantes">Imprimantes</option>
+                <option value="Stockage">Stockage</option>
+                <option value="Accessoires">Accessoires</option>
+                <option value="Réseaux">Réseaux</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label" for="form-prod-price">Prix de vente (FCFA) *</label>
+              <input type="number" id="form-prod-price" class="form-control" placeholder="Ex: 680000" min="500" required>
+            </div>
+
+            <div>
+              <label class="form-label" for="form-prod-old-price">Ancien Prix Promo (Optionnel)</label>
+              <input type="number" id="form-prod-old-price" class="form-control" placeholder="Ex: 750000" min="500">
+            </div>
+
+            <div>
+              <label class="form-label" for="form-prod-stock">Quantité en Stock *</label>
+              <input type="number" id="form-prod-stock" class="form-control" placeholder="Ex: 10" min="0" required>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label" for="form-prod-image">URL de l'image *</label>
+              <input type="url" id="form-prod-image" class="form-control" placeholder="https://images.unsplash.com/..." required>
+              <div class="img-preview-box">
+                <img id="modal-prod-preview" src="https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500" alt="Aperçu">
+              </div>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label" for="form-prod-desc">Description commerciale</label>
+              <textarea id="form-prod-desc" class="form-control" placeholder="Présentation détaillée des atouts du produit..."></textarea>
+            </div>
+
+            <div class="form-group-full">
+              <label class="form-label" for="form-prod-specs">Caractéristiques Techniques (Une par ligne au format : Clé: Valeur)</label>
+              <textarea id="form-prod-specs" class="form-control" placeholder="Processeur: Intel Core i7&#10;RAM: 16 Go DDR5&#10;Stockage: 512 Go SSD&#10;Garantie: 12 Mois"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeAdminProductModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer le Produit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       4. MODALE DE DÉTAIL DE COMMANDE
+       ======================================================================== -->
+  <div class="admin-modal-backdrop" id="admin-order-modal">
+    <div class="admin-modal" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Détails de la Commande</h2>
+        <button class="modal-close-btn" onclick="closeAdminOrderModal()">✕</button>
+      </div>
+      <div class="modal-body" id="order-modal-body">
+        <!-- Rempli dynamiquement -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAdminOrderModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteneur des notifications toast -->
+  <div id="admin-toast-container"></div>
+
+  <!-- Script JavaScript du Dashboard -->
+  <script src="admin.js"></script>
+</body>
+</html>

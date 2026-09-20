@@ -67,6 +67,29 @@
   --header-height: 80px;
 }
 
+body.light-mode {
+  --bg-darkest: #edf3ff;
+  --bg-main: #f4f7ff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f2f6ff;
+  --bg-surface: #eef4ff;
+  --bg-glass: rgba(255, 255, 255, 0.78);
+  --bg-glass-card: rgba(255, 255, 255, 0.75);
+  --text-primary: #101828;
+  --text-secondary: #344054;
+  --text-muted: #667085;
+  --text-dim: #98a2b3;
+  --border-subtle: rgba(16, 24, 40, 0.08);
+  --border-focus: rgba(229, 9, 20, 0.35);
+  --border-glow: rgba(229, 9, 20, 0.18);
+  --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.14);
+  --shadow-red: 0 12px 28px rgba(229, 9, 20, 0.12);
+  --shadow-glow: 0 0 20px rgba(229, 9, 20, 0.18);
+  color-scheme: light;
+}
+
 /* --------------------------------------------------------------------------
    2. RÉINITIALISATION & BASES
    -------------------------------------------------------------------------- */
@@ -83,13 +106,24 @@ html {
 }
 
 body {
-  background-color: var(--bg-main);
+  background:
+    radial-gradient(circle at top left, rgba(229, 9, 20, 0.22), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(173, 216, 255, 0.22), transparent 26%),
+    linear-gradient(135deg, #0b0d12 0%, #131724 42%, #090b10 100%);
   color: var(--text-primary);
   font-family: var(--font-body);
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+body.light-mode {
+  background:
+    radial-gradient(circle at top left, rgba(229, 9, 20, 0.12), transparent 20%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.14), transparent 22%),
+    linear-gradient(135deg, #f6f9ff 0%, #edf3ff 32%, #e6eefb 100%);
 }
 
 /* Arrière-plan Tech avec Halo lumineux rouge subtil */
@@ -100,9 +134,13 @@ body::before {
   right: -100px;
   width: 550px;
   height: 550px;
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.12) 0%, rgba(229, 9, 20, 0) 70%);
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.18) 0%, rgba(229, 9, 20, 0) 70%);
   pointer-events: none;
   z-index: 0;
+}
+
+body.light-mode::before {
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.1) 0%, rgba(229, 9, 20, 0) 70%);
 }
 
 body::after {
@@ -112,9 +150,13 @@ body::after {
   left: -150px;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.08) 0%, rgba(229, 9, 20, 0) 70%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
   pointer-events: none;
   z-index: 0;
+}
+
+body.light-mode::after {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0) 70%);
 }
 
 /* Scrollbar Personnalisée */
@@ -438,6 +480,31 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.theme-toggle {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:hover {
+  background: var(--red-subtle);
+  border-color: var(--red-primary);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.theme-toggle-icon {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 /* Bouton Burger Mobile */
@@ -1183,6 +1250,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .product-image-box img {
@@ -1190,9 +1258,11 @@ button {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  cursor: pointer;
 }
 
-.product-card:hover .product-image-box img {
+.product-card:hover .product-image-box img,
+.product-image-box:hover img {
   transform: scale(1.08);
 }
 
@@ -1205,6 +1275,7 @@ button {
   flex-direction: column;
   gap: 6px;
   z-index: 2;
+  pointer-events: none;
 }
 
 .badge {
@@ -1308,6 +1379,12 @@ button {
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 2.7em;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.product-title:hover {
+  color: var(--red-hover);
 }
 
 .product-rating {
